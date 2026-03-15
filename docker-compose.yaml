@@ -1,0 +1,60 @@
+version: '3.7'
+
+services:
+
+  trader:
+    build:
+      context: ./trader
+    container_name: trader
+    command: python trader.py
+    environment:
+      - LOG_FILE_NAME=/var/log/trader/trader.logs
+    volumes:
+      - logdata:/var/log/trader
+
+  questdb:
+    image: questdb/questdb:7.1.1
+    container_name: questdb
+    ports:
+      - "9000:9000"  # Rest and Web app
+      - "9009:9009"  # InfluxDB line protocol
+      - "8812:8812"  # Postgres protocol
+    healthcheck:
+      test: timeout 10s bash -c ':> /dev/tcp/localhost/9003'
+      interval: 5s
+      timeout: 10s
+      retries: 50
+
+  telegraf:
+    image: telegraf:1.26.2
+    container_name: telegraf
+    environment:
+      - QUESTDB_HOST_NAME=questdb:9009
+      - LOG_FILE_NAME=/var/log/trader/trader.logs
+    depends_on:
+      questdb:
+        condition: service_healthy
+    volumes:
+      - logdata:/var/log/trader
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf
+
+  grafana:
+    image: grafana/grafana:9.5.1
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"
+    environment:
+      - QUESTDB_URL=questdb:8812
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_BASIC_ENABLED=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Editor
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/dashboard.json
+    depends_on:
+      questdb:
+        condition: service_healthy
+
+volumes:
+  logdata:
