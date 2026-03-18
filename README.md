@@ -1,11 +1,16 @@
-# Trading Monitoring Demo (Faithful Local Recreation)
+# Systematic Trade Monitor
 
 This repository is a faithful local recreation of the monitoring stack described in:
 
 - Article: [Monitoring Trading Systems](https://osquant.com/papers/monitoring-trading-systems/)
 - Reference repository: [robolyst/trading-monitoring-demo](https://github.com/robolyst/trading-monitoring-demo)
 
+Citation:
+Letchford (2023), "How to engineer a monitoring system for your trading strategy", OS Quant.
+
 The source project contents were provided locally at `web/trading-monitoring-demo-main`, and this repo’s runnable stack files were aligned to that source.
+
+[Further enhancements under construction]
 
 ## Project objective
 
